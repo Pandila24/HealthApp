@@ -42,7 +42,9 @@ export const tdee = (p: Profile) => bmr(p) * p.activity;
 /**
  * Evidence-based defaults (similar to what MacroFactor / MyFitnessPal derive):
  * - calories: TDEE −20% to lose, +10% to gain
- * - protein: 2.0 g/kg when cutting (preserves muscle), 1.8 g/kg otherwise
+ * - protein: 2.0 g/kg when cutting (preserves muscle), 1.8 g/kg otherwise, using
+ *   body weight capped at a BMI of 25 for height. Protein needs track lean
+ *   mass, so at higher body fat total weight overshoots badly.
  * - fat: 27% of calories
  * - carbs: the remainder
  * - sugar: ≤10% of calories (WHO guideline for free sugars, applied to total as a simple cap)
@@ -52,7 +54,8 @@ export function computeTargets(p: Profile): Targets {
   const mult = p.goal === 'lose' ? 0.8 : p.goal === 'gain' ? 1.1 : 1;
   const floor = p.sex === 'male' ? 1500 : 1200;
   const calories = Math.max(floor, Math.round((tdee(p) * mult) / 10) * 10);
-  const protein = Math.round(p.weightKg * (p.goal === 'lose' ? 2.0 : 1.8));
+  const refKg = Math.min(p.weightKg, 25 * (p.heightCm / 100) ** 2);
+  const protein = Math.round(refKg * (p.goal === 'lose' ? 2.0 : 1.8));
   const fat = Math.round((calories * 0.27) / 9);
   const carbs = Math.max(0, Math.round((calories - protein * 4 - fat * 9) / 4));
   return {
