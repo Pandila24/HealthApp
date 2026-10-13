@@ -9,11 +9,18 @@ import type { AppState, FoodEntry, RunPoint } from '../../types';
 describe('nutrition', () => {
   it('computes sensible targets for a cut', () => {
     const t = computeTargets({ sex: 'male', age: 30, heightCm: 180, weightKg: 90, activity: 1.55, goal: 'lose' });
-    expect(t.protein).toBe(180);
+    expect(t.protein).toBe(162); // BMI-25 reference weight for 180 cm = 81 kg × 2.0
     expect(t.calories).toBeGreaterThan(2000);
     expect(t.calories).toBeLessThan(2600);
     // macros add back up to calories (within rounding)
     expect(Math.abs(t.protein * 4 + t.carbs * 4 + t.fat * 9 - t.calories)).toBeLessThan(15);
+  });
+
+  it('bases protein on a BMI-25 reference weight at high body weight', () => {
+    // 6'0", 290 lb, 31 y/o male, moderate activity, cutting
+    const t = computeTargets({ sex: 'male', age: 31, heightCm: 182.88, weightKg: 290 * 0.45359237, activity: 1.55, goal: 'lose' });
+    expect(t.calories).toBe(2860);
+    expect(t.protein).toBe(167);
   });
 
   it('scales per-100g values and totals entries', () => {
