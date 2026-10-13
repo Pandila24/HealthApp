@@ -1,1 +1,51 @@
 # HealthApp
+
+A personal nutrition, workout and running tracker. It's an installable web app (PWA): it runs on iPhone and Android from the home screen, with no App Store and no subscription.
+
+## Features
+
+| Area | What it does |
+|---|---|
+| **Today** | Calorie ring, protein/carbs/fat/sugar bars, weekly stats, body-weight trend, and personalized suggestions |
+| **Food** | Search **USDA FoodData Central** (whole foods) and **Open Food Facts** (packaged foods), **scan barcodes** with the camera, custom foods, recents, copy yesterday's meal, and per-meal totals for calories, protein, carbs, fat, sugar and fiber |
+| **Train** | 870+ exercise library with **animated start/end photos** and step-by-step instructions, filtered by muscle and equipment. Routines (starter full-body program included), live workout logging with previous-session values, PR detection, rest timer, and history |
+| **Run** | GPS tracking with a live map (OpenStreetMap), distance, moving time, pace, mile/km splits, weekly mileage chart, and auto-pause recovery if the phone kills the app |
+| **Me** | Profile → auto calorie/macro targets (Mifflin-St Jeor), or manual targets, lb/mi or kg/km units, and JSON backup/restore |
+
+### Suggestions engine (free, on-device)
+- Protein pacing ("65 g to go", with food ideas), sugar over limit, low fiber, 7-day calorie average vs target
+- Weight trend vs goal (stalled, losing too fast, not gaining)
+- Double progression: "go heavier" after 12+ reps on every set, otherwise "add a rep"
+- Muscle groups not trained in 8 days, rest-day nudge after 6 days in a row
+- Run/walk starter plan, and a warning when weekly mileage jumps more than 10%
+
+## Cost
+
+| Piece | Cost |
+|---|---|
+| Hosting (GitHub Pages / Netlify / Cloudflare Pages) | Free |
+| Food data (USDA key, Open Food Facts) | Free |
+| Exercise images ([free-exercise-db](https://github.com/yuhonas/free-exercise-db), public domain) | Free |
+| Maps (OpenStreetMap) | Free |
+
+All data stays on your device (IndexedDB). Use **Me → Export backup** to save a copy.
+
+## Develop
+
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm test         # unit tests
+npm run build    # production build in dist/
+```
+
+## Deploy (free)
+
+- **GitHub Pages:** `.github/workflows/deploy.yml` builds and deploys on every push to `main`. Enable it under *Settings → Pages → Source: GitHub Actions*. Pages on a private repo needs GitHub Pro; otherwise use the next option.
+- **Netlify / Cloudflare Pages** (free, works with private repos): connect the repo, build command `npm run build`, output folder `dist`.
+
+Then open the URL on your phone and choose **Add to Home Screen** (Safari share menu on iPhone, ⋮ menu on Android).
+
+## Known limits (web app vs native)
+- **Running:** keep the screen on during runs (the app requests a wake lock). iOS stops GPS for web apps when the screen locks.
+- **Apple Health / Google Health Connect:** native-only APIs, so this app can't read them. See the roadmap.
