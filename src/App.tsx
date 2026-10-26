@@ -4,10 +4,12 @@ import FoodPage from './pages/Food';
 import Train from './pages/Train';
 import RunPage from './pages/Run';
 import SettingsPage from './pages/Settings';
+import PlanPage from './pages/Plan';
 
 const TABS = [
   { id: 'today', label: 'Today', icon: '◎' },
   { id: 'food', label: 'Food', icon: '🍽' },
+  { id: 'plan', label: 'Plan', icon: '📋' },
   { id: 'train', label: 'Train', icon: '🏋' },
   { id: 'run', label: 'Run', icon: '🏃' },
   { id: 'settings', label: 'Me', icon: '⚙' },
@@ -36,6 +38,7 @@ export default function App() {
       <main>
         {tab === 'today' && <Today go={go} />}
         {tab === 'food' && <FoodPage />}
+        {tab === 'plan' && <PlanPage go={go} />}
         {tab === 'train' && <Train />}
         {tab === 'run' && <RunPage />}
         {tab === 'settings' && <SettingsPage />}

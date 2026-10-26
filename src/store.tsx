@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import { get, set } from 'idb-keyval';
 import type { AppState } from './types';
 import { computeTargets } from './lib/nutrition';
+import { DEFAULT_PLAN, targetsFor } from './lib/plan';
 
 const KEY = 'healthapp-state-v1';
 
@@ -15,11 +16,17 @@ export const initialState: AppState = {
   customFoods: [],
   recentFoods: [],
   routines: [],
+  plan: { ...DEFAULT_PLAN },
   workouts: [],
   activeWorkout: null,
   runs: [],
   weights: [],
 };
+
+/** The plan's week/phase changes with the calendar, so refresh plan-driven targets when data loads. */
+function syncTargets(s: AppState): AppState {
+  return s.plan.active && s.settings.autoTargets ? { ...s, targets: targetsFor(s, computeTargets) } : s;
+}
 
 interface Store {
   state: AppState;
@@ -27,7 +34,8 @@ interface Store {
   replace: (s: AppState) => void;
 }
 
-const Ctx = createContext<Store | null>(null);
+/** Exported so tests can render pages against a fixed state. */
+export const Ctx = createContext<Store | null>(null);
 
 // All data lives in IndexedDB on this device. Nothing is sent anywhere except
 // food-search queries to Open Food Facts / USDA and map tiles from OpenStreetMap.
@@ -37,7 +45,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     get<AppState>(KEY)
-      .then((saved) => setState(saved ? { ...initialState, ...saved } : initialState))
+      .then((saved) => setState(syncTargets(saved ? { ...initialState, ...saved } : initialState)))
       .catch(() => setState(initialState));
     navigator.storage?.persist?.();
   }, []);
@@ -53,12 +61,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setState((s) => {
         if (!s) return s;
         const next = fn(s);
-        // Keep targets in sync with profile changes (e.g. a new weigh-in).
-        return next.settings.autoTargets && next.profile !== s.profile ? { ...next, targets: computeTargets(next.profile) } : next;
+        // Keep targets in sync with profile or plan changes (e.g. a new weigh-in or phase switch).
+        return next.settings.autoTargets && (next.profile !== s.profile || next.plan !== s.plan) ? { ...next, targets: targetsFor(next, computeTargets) } : next;
       }),
     [],
   );
-  const replace = useCallback((s: AppState) => setState({ ...initialState, ...s }), []);
+  const replace = useCallback((s: AppState) => setState(syncTargets({ ...initialState, ...s })), []);
 
   if (!state) return <div className="loading">Loading…</div>;
   return <Ctx.Provider value={{ state, update, replace }}>{children}</Ctx.Provider>;

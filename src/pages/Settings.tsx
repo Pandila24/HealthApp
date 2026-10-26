@@ -8,6 +8,7 @@ import { NumberInput } from '../components/ui';
 const ACTIVITY = [
   [1.2, 'Sedentary (desk job, little exercise)'],
   [1.375, 'Light (1–3 workouts/week)'],
+  [1.45, 'Training 5×/week + daily steps (plan default)'],
   [1.55, 'Moderate (3–5 workouts/week)'],
   [1.725, 'Very active (6–7 workouts/week)'],
   [1.9, 'Athlete / physical job + training'],

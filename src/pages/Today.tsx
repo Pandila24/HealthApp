@@ -5,6 +5,7 @@ import { buildSuggestions } from '../lib/suggestions';
 import { useExercises } from '../lib/exercises';
 import { addDays, dayKey, distanceUnit, fromDisplayWeight, round, toDisplayDistance, toDisplayWeight, weightUnit } from '../lib/util';
 import { Bar, LineChart, NumberInput, Ring } from '../components/ui';
+import { WEEKDAY_NAMES, dayPlan, planTargets, templateFor, weekInfo, PHASES } from '../lib/plan';
 import type { Tab } from '../App';
 
 const AREA_ICON = { nutrition: '🍽', training: '🏋', running: '🏃', body: '⚖' } as const;
@@ -46,6 +47,8 @@ export default function Today({ go }: { go: (t: Tab) => void }) {
         <h1>Today</h1>
         <span className="muted">{new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'short', day: 'numeric' })}</span>
       </header>
+
+      {state.plan.active && <PlanCard go={go} />}
 
       <section className="card today-summary" onClick={() => go('food')}>
         <Ring value={tot.calories} target={t.calories} />
@@ -101,5 +104,30 @@ export default function Today({ go }: { go: (t: Tab) => void }) {
         <LineChart data={weights} />
       </section>
     </div>
+  );
+}
+
+function PlanCard({ go }: { go: (t: Tab) => void }) {
+  const { state } = useStore();
+  const info = weekInfo(state.plan);
+  const wd = new Date().getDay();
+  const dp = dayPlan(wd);
+  const meals = templateFor(wd);
+  const label = dp.kind === 'lift' ? dp.session.name : dp.kind === 'conditioning' ? 'Conditioning' : 'Rest day';
+  const tg = planTargets(state.profile, state.plan);
+  return (
+    <section className="card" onClick={() => go('plan')} style={{ cursor: 'pointer' }}>
+      <div className="card-head">
+        <h2>
+          {WEEKDAY_NAMES[wd]} · {label}
+        </h2>
+        <span className="muted small">
+          Wk {Math.max(1, info.week)} · {PHASES[info.phase].label}
+        </span>
+      </div>
+      <p className="muted small">
+        Eat Day {meals.id} ({meals.title}) · {tg.calories} kcal, {tg.protein} g protein. Tap for the full plan.
+      </p>
+    </section>
   );
 }
