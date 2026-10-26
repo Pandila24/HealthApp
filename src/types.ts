@@ -109,6 +109,46 @@ export interface WeightEntry {
   kg: number;
 }
 
+export type PlanPhaseId = 'ramp' | 'cut' | 'build';
+
+/** A body check-in: any subset of these can be filled in. Lengths are stored in cm. */
+export interface Checkin {
+  id: string;
+  date: string; // YYYY-MM-DD
+  kg?: number;
+  bodyFatPct?: number;
+  waistCm?: number;
+  armCm?: number;
+  chestCm?: number;
+  note?: string;
+}
+
+/** Non-lifting conditioning (bike, incline walk, elliptical, etc.). */
+export interface ConditioningLog {
+  id: string;
+  date: string;
+  kind: string;
+  minutes: number;
+  avgHr?: number;
+  note?: string;
+}
+
+export interface PlanState {
+  active: boolean;
+  /** Day week 1 starts (YYYY-MM-DD). */
+  startDate: string;
+  /** Force a phase; null = automatic (re-entry for weeks 1–2, then lean-out). */
+  phaseOverride: 'cut' | 'build' | null;
+  /** Latest body-fat estimate, used to size protein from lean mass. */
+  bodyFatPct: number | null;
+  /** Activity multiplier used for maintenance calories while on the plan. */
+  activity: number;
+  /** Manual calorie nudge (kcal/day) added to the calculated target. */
+  calAdjust: number;
+  checkins: Checkin[];
+  conditioning: ConditioningLog[];
+}
+
 export interface AppState {
   profile: Profile;
   targets: Targets;
@@ -117,6 +157,7 @@ export interface AppState {
   customFoods: Food[];
   recentFoods: Food[];
   routines: Routine[];
+  plan: PlanState;
   workouts: Workout[];
   activeWorkout: Workout | null;
   runs: Run[];

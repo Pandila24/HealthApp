@@ -8,6 +8,7 @@ import { NumberInput } from '../components/ui';
 const ACTIVITY = [
   [1.2, 'Sedentary (desk job, little exercise)'],
   [1.375, 'Light (1–3 workouts/week)'],
+  [1.45, 'Training 5×/week + daily steps (plan default)'],
   [1.55, 'Moderate (3–5 workouts/week)'],
   [1.725, 'Very active (6–7 workouts/week)'],
   [1.9, 'Athlete / physical job + training'],
@@ -21,7 +22,8 @@ export default function SettingsPage() {
   const file = useRef<HTMLInputElement>(null);
 
   const setProfile = (patch: Partial<typeof p>) => update((s) => ({ ...s, profile: { ...s.profile, ...patch } }));
-  const setTarget = (k: keyof Targets, v: number) => update((s) => ({ ...s, targets: { ...s.targets, [k]: v } }));
+  // Editing any target by hand switches to manual so the edit isn't overwritten.
+  const setTarget = (k: keyof Targets, v: number) => update((s) => ({ ...s, settings: { ...s.settings, autoTargets: false }, targets: { ...s.targets, [k]: v } }));
 
   const totalIn = p.heightCm / 2.54;
   const exportData = () => {
@@ -129,7 +131,9 @@ export default function SettingsPage() {
             Auto
           </label>
         </div>
-        <p className="muted small">{state.settings.autoTargets ? 'Calculated from your profile and goal. Uncheck Auto to set your own (e.g. from a coach or dietitian).' : 'Manual targets.'}</p>
+        <p className="muted small">{state.settings.autoTargets
+            ? 'These update automatically whenever you change your profile or log a new weight. Edit any number to set your own instead.'
+            : 'Manual targets. Check Auto to go back to calculated targets.'}</p>
         <div className="grid-2">
           {(
             [
@@ -143,7 +147,7 @@ export default function SettingsPage() {
           ).map(([k, label]) => (
             <label key={k}>
               {label}
-              <input type="number" inputMode="numeric" value={state.targets[k]} disabled={state.settings.autoTargets} onChange={(e) => setTarget(k, Number(e.target.value))} />
+              <input type="number" inputMode="numeric" value={state.targets[k]} onChange={(e) => setTarget(k, Number(e.target.value))} />
             </label>
           ))}
         </div>

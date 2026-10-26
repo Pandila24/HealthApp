@@ -5,6 +5,7 @@ import { useExercises } from '../lib/exercises';
 import { e1rm, formatDuration, fromDisplayWeight, round, toDisplayWeight, uid, weightUnit } from '../lib/util';
 import { ExerciseDetail, ExerciseLibrary } from '../components/ExerciseViews';
 import { NumberInput, Sheet } from '../components/ui';
+import { buildWorkout } from '../lib/plan';
 
 const STARTER_ROUTINES: Routine[] = [
   {
@@ -37,22 +38,7 @@ export default function Train() {
   const active = state.activeWorkout;
 
   const start = (r?: Routine) => {
-    const lastFor = (id: string) => [...state.workouts].sort((a, b) => b.startedAt - a.startedAt).flatMap((w) => w.exercises).find((e) => e.exerciseId === id);
-    const w: Workout = {
-      id: uid(),
-      name: r?.name ?? 'Workout',
-      startedAt: Date.now(),
-      exercises: (r?.exercises ?? []).map((e) => {
-        const prev = lastFor(e.exerciseId)?.sets.filter((s) => s.done);
-        return {
-          exerciseId: e.exerciseId,
-          name: e.name,
-          // Pre-fill with last session's weight so logging is mostly tapping ✓.
-          sets: Array.from({ length: e.sets }, (_, i) => ({ weight: prev?.[Math.min(i, prev.length - 1)]?.weight ?? 0, reps: e.reps, done: false })),
-        };
-      }),
-    };
-    update((s) => ({ ...s, activeWorkout: w }));
+    update((s) => ({ ...s, activeWorkout: buildWorkout(s.workouts, r) }));
   };
 
   if (active) return <WorkoutSession />;
